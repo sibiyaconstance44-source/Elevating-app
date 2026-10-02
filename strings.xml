@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Elevating</string>
+    <string name="admob_app_id">ca-app-pub-4555189780109168~9176978363</string>
+    <string name="admob_interstitial_id">ca-app-pub-4555189780109168/3509718717</string>
+</resources>
