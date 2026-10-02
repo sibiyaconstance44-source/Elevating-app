@@ -24,30 +24,49 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Grant execute permission for gradlew
-        working-directory: android
+      - name: Locate Android Project and Grant execute permission
         run: |
+          if [ -d "android" ]; then
+            echo "ANDROID_DIR=android" >> $GITHUB_ENV
+            TARGET_DIR="android"
+          else
+            echo "ANDROID_DIR=." >> $GITHUB_ENV
+            TARGET_DIR="."
+          fi
+          echo "Target directory is: $TARGET_DIR"
+          cd "$TARGET_DIR"
+          if [ ! -f "app/build.gradle" ]; then
+            echo "::error::Cannot find app/build.gradle. Please upload the android folder into this repository."
+            ls -la
+            exit 1
+          fi
           if [ ! -f gradlew ]; then
             gradle wrapper
           fi
           chmod +x gradlew
 
       - name: Build Android App Bundle (.aab for Play Store)
-        working-directory: android
-        run: ./gradlew bundleRelease --stacktrace
+        run: |
+          cd ${{ env.ANDROID_DIR || '.' }}
+          ./gradlew bundleRelease --stacktrace
 
       - name: Build Android APK (for direct phone test)
-        working-directory: android
-        run: ./gradlew assembleRelease --stacktrace || ./gradlew assembleDebug
+        run: |
+          cd ${{ env.ANDROID_DIR || '.' }}
+          ./gradlew assembleRelease --stacktrace || ./gradlew assembleDebug
 
       - name: Upload Play Store AAB
         uses: actions/upload-artifact@v4
         with:
           name: elevating-playstore-aab
-          path: android/app/build/outputs/bundle/release/*.aab
+          path: |
+            android/app/build/outputs/bundle/release/*.aab
+            app/build/outputs/bundle/release/*.aab
 
       - name: Upload Test APK
         uses: actions/upload-artifact@v4
         with:
           name: elevating-test-apk
-          path: android/app/build/outputs/apk/**/*.apk
+          path: |
+            android/app/build/outputs/apk/**/*.apk
+            app/build/outputs/apk/**/*.apk
