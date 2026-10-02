@@ -23,7 +23,7 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -36,6 +36,9 @@ android {
 
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.0'
-    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+    implementation ('com.google.androidbrowserhelper:androidbrowserhelper:2.5.0') {
+        exclude group: 'androidx.appcompat', module: 'appcompat'
+        exclude group: 'androidx.browser', module: 'browser'
+    }
     implementation 'androidx.browser:browser:1.8.0'
 }
