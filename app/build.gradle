@@ -15,8 +15,8 @@ android {
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
         manifestPlaceholders = [
-                hostName: 'example.com',
-                defaultUrl: 'https://example.com',
+                hostName: 'ais-pre-6ockz5tdbznoghyafem3vj-389253933923.europe-west2.run.app',
+                defaultUrl: 'https://ais-pre-6ockz5tdbznoghyafem3vj-389253933923.europe-west2.run.app',
                 assetStatements: '[]'
         ]
     }
