@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -30,20 +30,21 @@ jobs:
           test -f app/build.gradle
           test -f settings.gradle
 
-      - name: Generate Gradle wrapper if needed
+      - name: Generate gradle wrapper if missing
         run: |
-          if [ ! -f gradlew ]; then
-            gradle wrapper --gradle-version 8.7
+          if [ ! -f gradlew ] || [ ! -f gradle/wrapper/gradle-wrapper.jar ] || [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then
+            gradle wrapper --gradle-version 8.7 --distribution-type bin
           fi
           chmod +x gradlew
 
+      - name: Validate Gradle wrapper
+        run: ./gradlew -version
+
       - name: Build release AAB
-        run: |
-          ./gradlew :app:bundleRelease --stacktrace
+        run: ./gradlew :app:bundleRelease --stacktrace
 
       - name: Build release APK
-        run: |
-          ./gradlew :app:assembleRelease --stacktrace
+        run: ./gradlew :app:assembleRelease --stacktrace
 
       - name: Upload AAB artifact
         if: success()
