@@ -1,0 +1,1 @@
+-keep class za.co.elevate.learning.** { *; }
