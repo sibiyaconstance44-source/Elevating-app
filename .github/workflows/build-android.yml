@@ -1,0 +1,53 @@
+name: Build Android App (.aab & .apk)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Android Bundle and APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        working-directory: android
+        run: |
+          if [ ! -f gradlew ]; then
+            gradle wrapper
+          fi
+          chmod +x gradlew
+
+      - name: Build Android App Bundle (.aab for Play Store)
+        working-directory: android
+        run: ./gradlew bundleRelease --stacktrace
+
+      - name: Build Android APK (for direct phone test)
+        working-directory: android
+        run: ./gradlew assembleRelease --stacktrace || ./gradlew assembleDebug
+
+      - name: Upload Play Store AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: elevating-playstore-aab
+          path: android/app/build/outputs/bundle/release/*.aab
+
+      - name: Upload Test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: elevating-test-apk
+          path: android/app/build/outputs/apk/**/*.apk
