@@ -1,0 +1,54 @@
+name: Build Android App (aab & apk)
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > elevating-release.keystore
+
+      - name: Create keystore.properties
+        run: |
+          echo "storeFile=elevating-release.keystore" > keystore.properties
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> keystore.properties
+          echo "keyAlias=elevating" >> keystore.properties
+          echo "keyPassword=${{ secrets.KEYSTORE_PASSWORD }}" >> keystore.properties
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build release AAB
+        run: ./gradlew app:bundleRelease
+
+      - name: Build release APK
+        run: ./gradlew app:assembleRelease
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: elevating-playstore-aab
+          path: app/build/outputs/bundle/release/app-release.aab
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: elevating-test-apk
+          path: app/build/outputs/apk/release/app-release.apk
