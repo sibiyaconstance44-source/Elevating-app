@@ -1,62 +1,9 @@
-name: Build Android App (.aab & .apk)
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Verify Android app structure
-        run: |
-          ls -la
-          echo "----"
-          ls -la app
-          test -f app/build.gradle
-          test -f settings.gradle
-
-      - name: Generate gradle wrapper if missing
-        run: |
-          if [ ! -f gradlew ] || [ ! -f gradle/wrapper/gradle-wrapper.jar ] || [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then
-            gradle wrapper --gradle-version 8.7 --distribution-type bin
-          fi
-          chmod +x gradlew
-
-      - name: Validate Gradle wrapper
-        run: ./gradlew -version
-
-      - name: Build release AAB
-        run: ./gradlew :app:bundleRelease --stacktrace
-
-      - name: Build release APK
-        run: ./gradlew :app:assembleRelease --stacktrace
-
-      - name: Upload AAB artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: elevating-playstore-aab
-          path: app/build/outputs/bundle/release/*.aab
-
-      - name: Upload APK artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: elevating-test-apk
-          path: app/build/outputs/apk/release/*.apk
+{
+  "owner": "sibiyaconstance44-source",
+  "repo": "Elevating-app",
+  "path": ".github/workflows/build-android.yml",
+  "content": "name: Build Android App (aab & apk)\n\non:\n  push:\n    branches: [ main ]\n  workflow_dispatch:\n\njobs:\n  build:\n    runs-on: ubuntu-latest\n\n    steps:\n      - name: Checkout Repository\n        uses: actions/checkout@v4\n\n      - name: Set up JDK 17\n        uses: actions/setup-java@v4\n        with:\n          distribution: temurin\n          java-version: '17'\n\n      - name: Set up Gradle\n        uses: gradle/actions/setup-gradle@v4\n\n      - name: Verify Android app structure\n        run: |\n          ls -la\n          echo \"----\"\n          ls -la app\n          test -f app/build.gradle\n          test -f settings.gradle\n\n      - name: Generate gradle wrapper if missing\n        run: |\n          if [ ! -f gradlew ] || [ ! -f gradle/wrapper/gradle-wrapper.jar ] || [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then\n            gradle wrapper --gradle-version 8.7 --distribution-type bin\n          fi\n          chmod +x gradlew\n\n      - name: Validate Gradle wrapper\n        run: ./gradlew -version\n\n      - name: Decode Keystore from Base64\n        run: |\n          echo \"${{ secrets.KEYSTORE_BASE64 }}\" | base64 -d > $GITHUB_WORKSPACE/elevating-release.keystore\n          ls -lh elevating-release.keystore\n\n      - name: Create keystore.properties\n        run: |\n          cat > $GITHUB_WORKSPACE/keystore.properties << EOF\n          storeFile=elevating-release.keystore\n          storePassword=${{ secrets.KEYSTORE_PASSWORD }}\n          keyAlias=elevating\n          keyPassword=${{ secrets.KEYSTORE_PASSWORD }}\n          EOF\n          cat keystore.properties\n\n      - name: Build release AAB\n        run: ./gradlew :app:bundleRelease --stacktrace\n\n      - name: Build release APK\n        run: ./gradlew :app:assembleRelease --stacktrace\n\n      - name: Upload AAB artifact\n        if: success()\n        uses: actions/upload-artifact@v4\n        with:\n          name: elevating-playstore-aab\n          path: app/build/outputs/bundle/release/*.aab\n\n      - name: Upload APK artifact\n        if: success()\n        uses: actions/upload-artifact@v4\n        with:\n          name: elevating-test-apk\n          path: app/build/outputs/apk/release/*.apk\n",
+  "message": "Fix: Add keystore decoding and properties creation to workflow",
+  "sha": "c58ea0dd48d9b707e64ffb04c7f4252f02f7cb43"
+}
 
