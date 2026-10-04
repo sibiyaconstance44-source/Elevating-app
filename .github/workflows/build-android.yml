@@ -22,14 +22,6 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Verify Android app structure
-        run: |
-          ls -la
-          echo "----"
-          ls -la app
-          test -f app/build.gradle
-          test -f settings.gradle
-
       - name: Generate gradle wrapper if missing
         run: |
           if [ ! -f gradlew ] || [ ! -f gradle/wrapper/gradle-wrapper.jar ] || [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then
@@ -40,17 +32,18 @@ jobs:
       - name: Validate Gradle wrapper
         run: ./gradlew -version
 
-      - name: Decode Keystore from Base64
+      - name: Decode Keystore to app folder
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > $GITHUB_WORKSPACE/elevating-release.keystore
-          ls -lh elevating-release.keystore
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > $GITHUB_WORKSPACE/app/elevating-release.keystore
+          ls -lh $GITHUB_WORKSPACE/app/elevating-release.keystore
 
       - name: Create keystore.properties
         run: |
-          echo "storeFile=elevating-release.keystore" > $GITHUB_WORKSPACE/keystore.properties
+          echo "storeFile=$GITHUB_WORKSPACE/app/elevating-release.keystore" > $GITHUB_WORKSPACE/keystore.properties
           echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_WORKSPACE/keystore.properties
           echo "keyAlias=elevating" >> $GITHUB_WORKSPACE/keystore.properties
           echo "keyPassword=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_WORKSPACE/keystore.properties
+          cp $GITHUB_WORKSPACE/keystore.properties $GITHUB_WORKSPACE/app/keystore.properties
           cat $GITHUB_WORKSPACE/keystore.properties
 
       - name: Build release AAB
