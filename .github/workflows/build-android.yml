@@ -47,88 +47,11 @@ jobs:
 
       - name: Create keystore.properties
         run: |
-          cat > $GITHUB_WORKSPACE/keystore.properties << EOF
-          storeFile=elevating-release.keystore
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyAlias=elevating
-          keyPassword=${{ secrets.KEYSTORE_PASSWORD }}
-          EOF
-          cat keystore.properties
-
-      - name: Build release AAB
-        run: ./gradlew :app:bundleRelease --stacktrace
-
-      - name: Build release APK
-        run: ./gradlew :app:assembleRelease --stacktrace
-
-      - name: Upload AAB artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: elevating-playstore-aab
-          path: app/build/outputs/bundle/release/*.aab
-
-      - name: Upload APK artifact
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: elevating-test-apk
-          path: app/build/outputs/apk/release/*.apkname: Build Android App (aab & apk)
-
-on:
-  push:
-    branches: [ main ]
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: Verify Android app structure
-        run: |
-          ls -la
-          echo "----"
-          ls -la app
-          test -f app/build.gradle
-          test -f settings.gradle
-
-      - name: Generate gradle wrapper if missing
-        run: |
-          if [ ! -f gradlew ] || [ ! -f gradle/wrapper/gradle-wrapper.jar ] || [ ! -f gradle/wrapper/gradle-wrapper.properties ]; then
-            gradle wrapper --gradle-version 8.7 --distribution-type bin
-          fi
-          chmod +x gradlew
-
-      - name: Validate Gradle wrapper
-        run: ./gradlew -version
-
-      - name: Decode Keystore from Base64
-        run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > $GITHUB_WORKSPACE/elevating-release.keystore
-          ls -lh elevating-release.keystore
-
-      - name: Create keystore.properties
-        run: |
-          cat > $GITHUB_WORKSPACE/keystore.properties << EOF
-          storeFile=elevating-release.keystore
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyAlias=elevating
-          keyPassword=${{ secrets.KEYSTORE_PASSWORD }}
-          EOF
-          cat keystore.properties
+          echo "storeFile=elevating-release.keystore" > $GITHUB_WORKSPACE/keystore.properties
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_WORKSPACE/keystore.properties
+          echo "keyAlias=elevating" >> $GITHUB_WORKSPACE/keystore.properties
+          echo "keyPassword=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_WORKSPACE/keystore.properties
+          cat $GITHUB_WORKSPACE/keystore.properties
 
       - name: Build release AAB
         run: ./gradlew :app:bundleRelease --stacktrace
