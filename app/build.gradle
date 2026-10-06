@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'za.co.elevate.learning'
+    namespace 'com.alexsheebottor.app'
     compileSdk 34
 
     defaultConfig {
-        applicationId 'za.co.elevate.learning'
+        applicationId 'com.alexsheebottor.app'
         minSdk 23
         targetSdk 34
         versionCode 1
